@@ -104,7 +104,7 @@ updateWeatherDisplay(appState.weatherData);
 **User Preferences** (LocalStorage)
 ```javascript
 // Stored in localStorage as JSON
-appState.userPreferences = { units: 'imperial', notifications: true, darkMode: false }
+appState.userPreferences = { units: 'metric', notifications: true, darkMode: false }
 saveUserPreferences()  // Persists to localStorage
 ```
 

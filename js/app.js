@@ -13,7 +13,7 @@ const appState = {
     weatherData: null,
     cleanups: [],
     userPreferences: {
-        units: 'imperial', // imperial or metric
+        units: 'metric', // imperial or metric
         notifications: true,
         darkMode: false
     }
@@ -151,10 +151,10 @@ async function loadWeatherData() {
     // In production, integrate with real API (OpenWeather, WeatherAPI, etc.)
     
     const mockWeatherData = {
-        temperature: 72,
+        temperature: 22,
         condition: 'Sunny',
-        waves: '3-5ft',
-        windSpeed: 8,
+        waves: '1-1.5m',
+        windSpeed: 13,
         humidity: 65,
         uvIndex: 7
     };
@@ -167,12 +167,12 @@ async function fetchWeatherForLocation(lat, lon) {
     // This would integrate with a real weather API
     console.log(`Fetching weather for ${lat}, ${lon}`);
     
-    // Simulated data
+    // Simulated data (metric: Celsius, km/h, meters)
     const weatherData = {
-        temperature: 72 + Math.random() * 10,
+        temperature: 18 + Math.random() * 12,
         condition: ['Sunny', 'Partly Cloudy', 'Clear'][Math.floor(Math.random() * 3)],
-        waves: `${Math.floor(2 + Math.random() * 4)}-${Math.floor(4 + Math.random() * 4)}ft`,
-        windSpeed: Math.floor(5 + Math.random() * 10),
+        waves: `${(0.6 + Math.random() * 1.2).toFixed(1)}-${(1.2 + Math.random() * 1.2).toFixed(1)}m`,
+        windSpeed: Math.floor(8 + Math.random() * 16),
         humidity: Math.floor(50 + Math.random() * 40),
         uvIndex: Math.floor(Math.random() * 11)
     };
