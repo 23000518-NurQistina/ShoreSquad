@@ -207,18 +207,29 @@ function toggleWeatherOverlay() {
 // ==========================================
 
 function initializeMap() {
-    // Mock cleanup events
+    // Mock cleanup events - featuring Pasir Ris as next cleanup
     appState.cleanups = generateMockCleanups();
     updateMapMarkers();
+    highlightNextCleanup();
 }
 
 function generateMockCleanups() {
     return [
+        { id: 0, name: 'Pasir Ris Beach', lat: 1.381497, lon: 103.955574, volunteers: 52, date: '2025-12-02', isNext: true },
         { id: 1, name: 'Malibu Beach Cleanup', lat: 34.0195, lon: -118.6814, volunteers: 42, date: '2025-12-05' },
         { id: 2, name: 'Santa Monica Pier Cleanup', lat: 34.0195, lon: -118.4965, volunteers: 28, date: '2025-12-06' },
         { id: 3, name: 'Huntington Beach Drive', lat: 33.8815, lon: -118.0023, volunteers: 35, date: '2025-12-07' },
         { id: 4, name: 'Laguna Beach Rally', lat: 33.5427, lon: -117.7827, volunteers: 18, date: '2025-12-08' }
     ];
+}
+
+function highlightNextCleanup() {
+    // Highlight the next cleanup event (Pasir Ris)
+    const nextCleanup = appState.cleanups.find(cleanup => cleanup.isNext);
+    if (nextCleanup) {
+        console.log(`📍 Next Cleanup: ${nextCleanup.name} (${nextCleanup.volunteers} volunteers)`);
+        trackEvent('next_cleanup_displayed', { location: nextCleanup.name, lat: nextCleanup.lat, lon: nextCleanup.lon });
+    }
 }
 
 function updateMapMarkers(centerLat = null, centerLon = null) {
