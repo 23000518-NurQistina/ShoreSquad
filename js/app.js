@@ -344,6 +344,7 @@ function formatDate(dateStr) {
     } catch {
         return dateStr;
     }
+}
 
 function toggleWeatherOverlay() {
     showNotification('🌤️ Weather overlay toggled', 'info');
