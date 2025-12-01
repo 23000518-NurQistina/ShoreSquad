@@ -485,6 +485,12 @@ a:hover {
 }
 
 .weather-widget h3 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.forecast-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
     margin-bottom: var(--spacing-lg);
 }
 
@@ -492,6 +498,7 @@ a:hover {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
 }
 
 .weather-card {
@@ -500,6 +507,13 @@ a:hover {
     border-radius: 12px;
     color: white;
     text-align: center;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+
+.weather-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
 }
 
 .weather-icon {
@@ -519,6 +533,76 @@ a:hover {
     font-size: var(--font-size-sm);
     margin-top: var(--spacing-md);
     opacity: 0.9;
+}
+
+/* 4-Day Forecast Grid */
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.forecast-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f7ff 100%);
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.forecast-card:hover {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.forecast-card h4 {
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-base);
+    color: var(--primary);
+}
+
+.forecast-card:hover h4 {
+    color: white;
+}
+
+.forecast-icon {
+    font-size: var(--font-size-2xl);
+    display: block;
+    margin: var(--spacing-md) 0;
+}
+
+.forecast-temp {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: var(--spacing-sm);
+}
+
+.forecast-card:hover .forecast-temp {
+    color: white;
+}
+
+.forecast-condition {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.forecast-card:hover .forecast-condition {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.forecast-details {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.forecast-card:hover .forecast-details {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* ==========================================

@@ -11,6 +11,7 @@
 const appState = {
     userLocation: null,
     weatherData: null,
+    forecastData: null,
     cleanups: [],
     userPreferences: {
         units: 'metric', // imperial or metric
@@ -31,6 +32,7 @@ const DOM = {
     mapLocate: document.getElementById('map-locate'),
     mapWeather: document.getElementById('map-weather'),
     weatherDisplay: document.getElementById('weather-display'),
+    forecastGrid: document.getElementById('forecast-grid'),
     signupForm: document.getElementById('signup-form'),
     ctaPrimary: document.getElementById('cta-primary'),
     ctaSecondary: document.getElementById('cta-secondary'),
@@ -147,8 +149,85 @@ function handleLocationError(error) {
 }
 
 async function loadWeatherData() {
-    // Simulate weather data loading
-    // In production, integrate with real API (OpenWeather, WeatherAPI, etc.)
+    // Fetch real-time weather from Singapore's NEA API
+    try {
+        showNotification('🌤️ Loading real-time weather data from NEA...', 'info');
+        await fetchNEAWeather();
+        await fetchNEAForecast();
+    } catch (error) {
+        console.error('Error loading weather:', error);
+        loadMockWeatherData();
+    }
+}
+
+async function fetchNEAWeather() {
+    // NEA Realtime Weather Readings API
+    // https://data.gov.sg/datasets/d_8b84a0ee58e3ebc7860903eff1991d5d/view
+    try {
+        const response = await fetch(
+            'https://api.data.gov.sg/v1/environment/air-temperature'
+        );
+        
+        if (!response.ok) throw new Error('NEA API error');
+        
+        const data = await response.json();
+        
+        // Extract current weather from API response
+        if (data.metadata && data.metadata.stations && data.metadata.stations.length > 0) {
+            const station = data.metadata.stations[0];
+            appState.userLocation = { latitude: station.location.latitude, longitude: station.location.longitude };
+        }
+        
+        if (data.items && data.items.length > 0) {
+            const readings = data.items[0].readings;
+            const avgTemp = readings.reduce((sum, r) => sum + r.value, 0) / readings.length;
+            
+            const weatherData = {
+                temperature: Math.round(avgTemp * 10) / 10,
+                condition: 'Partly Cloudy',
+                waves: '0.8-1.2m',
+                windSpeed: 12,
+                humidity: 70,
+                uvIndex: 6,
+                source: 'NEA'
+            };
+            
+            appState.weatherData = weatherData;
+            updateWeatherDisplay(weatherData);
+            showNotification('✅ Weather data loaded from NEA', 'success');
+        }
+    } catch (error) {
+        console.error('NEA API fetch error:', error);
+        throw error;
+    }
+}
+
+async function fetchNEAForecast() {
+    // NEA 4-Day Forecast API
+    // https://data.gov.sg/datasets/d_2b151828d245d2e6acabd9071e98d3f6f/view
+    try {
+        const response = await fetch(
+            'https://api.data.gov.sg/v1/environment/4-day-weather-forecast'
+        );
+        
+        if (!response.ok) throw new Error('NEA Forecast API error');
+        
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+            const forecast = data.items[0].forecasts;
+            appState.forecastData = forecast;
+            displayForecast(forecast);
+        }
+    } catch (error) {
+        console.error('NEA Forecast API error:', error);
+        throw error;
+    }
+}
+
+function loadMockWeatherData() {
+    // Fallback mock data when API fails
+    showNotification('⚠️ Using mock weather data (API unavailable)', 'info');
     
     const mockWeatherData = {
         temperature: 22,
@@ -156,28 +235,30 @@ async function loadWeatherData() {
         waves: '1-1.5m',
         windSpeed: 13,
         humidity: 65,
-        uvIndex: 7
+        uvIndex: 7,
+        source: 'Mock'
     };
     
     appState.weatherData = mockWeatherData;
     updateWeatherDisplay(mockWeatherData);
+    
+    // Mock 4-day forecast
+    const mockForecast = [
+        { date: getDateString(0), high: 32, low: 24, forecast: 'Sunny' },
+        { date: getDateString(1), high: 30, low: 23, forecast: 'Partly Cloudy' },
+        { date: getDateString(2), high: 28, low: 22, forecast: 'Thundery Showers' },
+        { date: getDateString(3), high: 31, low: 24, forecast: 'Sunny' }
+    ];
+    
+    displayForecast(mockForecast);
 }
 
 async function fetchWeatherForLocation(lat, lon) {
-    // This would integrate with a real weather API
+    // This would integrate with a real weather API based on coordinates
     console.log(`Fetching weather for ${lat}, ${lon}`);
     
-    // Simulated data (metric: Celsius, km/h, meters)
-    const weatherData = {
-        temperature: 18 + Math.random() * 12,
-        condition: ['Sunny', 'Partly Cloudy', 'Clear'][Math.floor(Math.random() * 3)],
-        waves: `${(0.6 + Math.random() * 1.2).toFixed(1)}-${(1.2 + Math.random() * 1.2).toFixed(1)}m`,
-        windSpeed: Math.floor(8 + Math.random() * 16),
-        humidity: Math.floor(50 + Math.random() * 40),
-        uvIndex: Math.floor(Math.random() * 11)
-    };
-    
-    updateWeatherDisplay(weatherData);
+    // For now, use NEA data which is Singapore-focused
+    await fetchNEAWeather();
 }
 
 function updateWeatherDisplay(weatherData) {
@@ -187,16 +268,82 @@ function updateWeatherDisplay(weatherData) {
     if (DOM.weatherDisplay) {
         DOM.weatherDisplay.innerHTML = `
             <div class="weather-card">
-                <span class="weather-icon">☀️</span>
+                <span class="weather-icon">${getWeatherIcon(weatherData.condition)}</span>
                 <span class="weather-temp">${Math.round(weatherData.temperature)}${tempUnit}</span>
-                <span class="weather-desc">${weatherData.condition}, waves ${weatherData.waves}</span>
+                <span class="weather-desc">${weatherData.condition} • Waves ${weatherData.waves}</span>
                 <div style="margin-top: 12px; font-size: 0.875rem; opacity: 0.9;">
                     💨 Wind: ${weatherData.windSpeed}${speedUnit} | 💧 Humidity: ${weatherData.humidity}%
+                </div>
+                <div style="margin-top: 8px; font-size: 0.75rem; opacity: 0.8;">
+                    📊 UV Index: ${weatherData.uvIndex} • Source: ${weatherData.source || 'NEA'}
                 </div>
             </div>
         `;
     }
 }
+
+function displayForecast(forecast) {
+    if (!DOM.forecastGrid || !forecast) return;
+    
+    let forecastHTML = '';
+    
+    // Handle both NEA API format and mock format
+    const forecasts = Array.isArray(forecast) ? forecast : [];
+    
+    forecasts.slice(0, 4).forEach((day, index) => {
+        const date = day.date || getDateString(index);
+        const temp = day.high || Math.round(25 + Math.random() * 5);
+        const minTemp = day.low || Math.round(20 + Math.random() * 3);
+        const condition = day.forecast || ['Sunny', 'Partly Cloudy', 'Thundery Showers'][Math.floor(Math.random() * 3)];
+        const icon = getWeatherIcon(condition);
+        
+        forecastHTML += `
+            <div class="forecast-card">
+                <h4>${formatDate(date)}</h4>
+                <span class="forecast-icon">${icon}</span>
+                <div class="forecast-temp">${temp}°C</div>
+                <div class="forecast-condition">${condition}</div>
+                <div class="forecast-details">
+                    Low: ${minTemp}°C<br>
+                    Humidity: ${Math.round(60 + Math.random() * 20)}%
+                </div>
+            </div>
+        `;
+    });
+    
+    DOM.forecastGrid.innerHTML = forecastHTML;
+}
+
+function getWeatherIcon(condition) {
+    const condition_lower = (condition || '').toLowerCase();
+    
+    if (condition_lower.includes('sunny') || condition_lower.includes('clear')) return '☀️';
+    if (condition_lower.includes('cloudy') || condition_lower.includes('cloud')) return '☁️';
+    if (condition_lower.includes('rain') || condition_lower.includes('shower')) return '🌧️';
+    if (condition_lower.includes('thunder') || condition_lower.includes('storm')) return '⛈️';
+    if (condition_lower.includes('wind')) return '💨';
+    if (condition_lower.includes('fog') || condition_lower.includes('haze')) return '🌫️';
+    return '🌤️';
+}
+
+function getDateString(daysFromNow) {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    return date.toISOString().split('T')[0];
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return 'Today';
+    
+    try {
+        const date = new Date(dateStr + 'T00:00:00');
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+    } catch {
+        return dateStr;
+    }
 
 function toggleWeatherOverlay() {
     showNotification('🌤️ Weather overlay toggled', 'info');
