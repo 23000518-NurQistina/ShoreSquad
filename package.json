@@ -1,0 +1,34 @@
+{
+  "name": "shoresquad",
+  "version": "1.0.0",
+  "description": "ShoreSquad - Rally your crew, track weather, and hit the next beach cleanup with our dope map app!",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server",
+    "dev": "live-server --port=8080 --watch=**/*.{html,css,js}",
+    "build": "echo 'Build script placeholder'",
+    "test": "echo 'Test script placeholder'",
+    "lint": "echo 'Lint script placeholder'"
+  },
+  "keywords": [
+    "beach-cleanup",
+    "environment",
+    "social-good",
+    "weather",
+    "map",
+    "youth-engagement"
+  ],
+  "author": "ShoreSquad Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/shoresquad.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/shoresquad/issues"
+  },
+  "homepage": "https://github.com/yourusername/shoresquad#readme"
+}
